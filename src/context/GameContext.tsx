@@ -1,4 +1,4 @@
-import { createContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useState, ReactNode } from 'react';
 import { Player, Card, GameState } from '@/types';
 import { cards } from '@/data/cards';
 import useSound from 'use-sound';
@@ -65,13 +65,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const addPlayer = (name: string) => {
     if (players.length < 6) {
-      setPlayers([
-        ...players,
+      setPlayers((prevPlayers) => [
+        ...prevPlayers,
         {
           id: crypto.randomUUID(),
           name,
           position: 0,
-          color: PLAYER_COLORS[players.length],
+          color: PLAYER_COLORS[prevPlayers.length],
         },
       ]);
     }
@@ -83,7 +83,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const drawCard = (color: keyof typeof cards) => {
+  const drawCard = (color: 'green' | 'orange' | 'pink' | 'yellow') => {
     const cardSet = cards[color];
     const randomIndex = Math.floor(Math.random() * cardSet.length);
     return cardSet[randomIndex];
@@ -118,13 +118,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
           if (index === currentPlayerIndex) {
             const newPosition = Math.min(32, player.position + value);
             playMoveSound();
-            
             const updatedPlayer = { ...player, position: newPosition };
-            
+
             if (!checkWinCondition(newPosition, updatedPlayer)) {
               const color = getIslandColor(newPosition);
               if (color !== 'white') {
-                const card = drawCard(color as keyof typeof cards);
+                // TypeScript check to ensure color is of valid type
+                const validColor = color as 'green' | 'orange' | 'pink' | 'yellow';
+                const card = drawCard(validColor);
                 setGameState((prev) => ({
                   ...prev,
                   currentCard: card,
@@ -132,7 +133,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 }));
               }
             }
-            
+
             return updatedPlayer;
           }
           return player;
@@ -172,7 +173,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function getIslandColor(position: number) {
-  const colors = ['green', 'orange', 'pink', 'yellow', 'white'];
+// Returns island color and handles type safety
+function getIslandColor(position: number): 'green' | 'orange' | 'pink' | 'yellow' | 'white' {
+  const colors = ['green', 'orange', 'pink', 'yellow', 'white'] as const;
   return colors[position % colors.length];
 }

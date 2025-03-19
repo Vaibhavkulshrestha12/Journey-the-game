@@ -8,10 +8,10 @@ export interface Player {
 export interface Card {
   id: string;
   type: 'green' | 'orange' | 'pink' | 'yellow';
-  question: string;
-  options?: string[];
+  question?: string; // Made optional
+  options?: readonly string[];
   correctAnswer?: string;
-  task?: string;
+  task?: string; // Added as optional
 }
 
 export interface GameState {

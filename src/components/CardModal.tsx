@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { GameContext } from '@/context/GameContext';
-import { Card } from '@/types';
+//import { Card } from '@/types';
 import useSound from 'use-sound';
 
 const colorStyles = {

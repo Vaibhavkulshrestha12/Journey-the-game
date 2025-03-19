@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
+//import { Dialog } from '@/components/ui/dialog';
 import { GameBoard } from '@/components/GameBoard';
 import { PlayerSetup } from '@/components/PlayerSetup';
 import { GameProvider } from '@/context/GameContext';
