@@ -18,17 +18,23 @@ interface GameContextType {
   resetGame: () => void;
 }
 
+const initialGameState: GameState = {
+  players: [],
+  hostId: null,
+  currentPlayerIndex: 0,
+  gameStarted: false,
+  hasWon: false,
+  winner: null,
+  currentCard: null,
+  showCard: false,
+};
+
 export const GameContext = createContext<GameContextType>({
   players: [],
   currentPlayer: null,
   gameStarted: false,
   isRolling: false,
-  gameState: {
-    hasWon: false,
-    winner: null,
-    currentCard: null,
-    showCard: false,
-  },
+  gameState: initialGameState,
   currentCard: null,
   showCard: false,
   addPlayer: () => {},
@@ -46,13 +52,6 @@ const PLAYER_COLORS = [
   '#FFEEAD',
   '#D4A5A5',
 ];
-
-const initialGameState: GameState = {
-  hasWon: false,
-  winner: null,
-  currentCard: null,
-  showCard: false,
-};
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -80,6 +79,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const startGame = () => {
     if (players.length >= 2) {
       setGameStarted(true);
+      setGameState(prev => ({
+        ...prev,
+        gameStarted: true,
+        players,
+        currentPlayerIndex: 0
+      }));
     }
   };
 
@@ -123,7 +128,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
             if (!checkWinCondition(newPosition, updatedPlayer)) {
               const color = getIslandColor(newPosition);
               if (color !== 'white') {
-                // TypeScript check to ensure color is of valid type
                 const validColor = color as 'green' | 'orange' | 'pink' | 'yellow';
                 const card = drawCard(validColor);
                 setGameState((prev) => ({
@@ -173,7 +177,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Returns island color and handles type safety
 function getIslandColor(position: number): 'green' | 'orange' | 'pink' | 'yellow' | 'white' {
   const colors = ['green', 'orange', 'pink', 'yellow', 'white'] as const;
   return colors[position % colors.length];

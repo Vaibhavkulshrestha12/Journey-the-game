@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useSocket } from '@/context/SocketContext';
 import { motion } from 'framer-motion';
 import {
   Dialog,
@@ -7,8 +7,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { GameContext } from '@/context/GameContext';
-//import { Card } from '@/types';
 import useSound from 'use-sound';
 
 const colorStyles = {
@@ -19,7 +17,7 @@ const colorStyles = {
 };
 
 export function CardModal() {
-  const { currentCard, showCard, handleCardComplete } = useContext(GameContext);
+  const { currentCard, showCard, handleCardComplete } = useSocket();
   const [playCardSound] = useSound('/sounds/card-flip.mp3', { volume: 0.5 });
 
   if (!currentCard || !showCard) return null;

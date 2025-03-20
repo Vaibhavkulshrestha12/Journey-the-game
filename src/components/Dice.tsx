@@ -5,15 +5,16 @@ import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react';
 interface DiceProps {
   onRoll: (value: number) => void;
   isRolling: boolean;
+  disabled?: boolean;
 }
 
 const diceIcons = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
 
-export function Dice({ onRoll, isRolling }: DiceProps) {
+export function Dice({ onRoll, isRolling, disabled }: DiceProps) {
   const [currentValue, setCurrentValue] = useState(1);
 
   const handleRoll = () => {
-    if (isRolling) return;
+    if (isRolling || disabled) return;
     
     const rollDuration = 1000;
     const framesPerSecond = 10;
@@ -37,10 +38,12 @@ export function Dice({ onRoll, isRolling }: DiceProps) {
   return (
     <Button
       onClick={handleRoll}
-      disabled={isRolling}
+      disabled={isRolling || disabled}
       variant="outline"
       size="lg"
-      className={`p-4 ${isRolling ? 'animate-bounce' : ''}`}
+      className={`p-4 ${isRolling ? 'animate-bounce' : ''} ${
+        disabled ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
     >
       <DiceIcon className="w-8 h-8" />
     </Button>

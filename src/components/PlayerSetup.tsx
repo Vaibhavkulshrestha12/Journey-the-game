@@ -1,79 +1,63 @@
-import { useContext, useState } from 'react';
-import { GameContext } from '@/context/GameContext';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { useSocket } from '@/context/SocketContext';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export function PlayerSetup() {
-  const { players, addPlayer, startGame, gameStarted } = useContext(GameContext);
-  const [playerName, setPlayerName] = useState('');
-  const [showDialog, setShowDialog] = useState(!gameStarted);
-
-  const handleAddPlayer = () => {
-    if (playerName.trim()) {
-      addPlayer(playerName.trim());
-      setPlayerName('');
-    }
-  };
-
-  const handleStartGame = () => {
-    if (players.length >= 2) {
-      startGame();
-      setShowDialog(false);
-    }
-  };
+  const { players, startGame, roomCode, isHost } = useSocket();
 
   return (
-    <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Player Setup</DialogTitle>
-        </DialogHeader>
+    <Card className="p-6 max-w-2xl mx-auto">
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Room Code: {roomCode}</h2>
+          <p className="text-gray-600 mb-4">
+            Share this code with other players to join the game.
+          </p>
+        </div>
+
         <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Players in Room:</h3>
           <div className="space-y-2">
-            <Label htmlFor="playerName">Player Name</Label>
-            <div className="flex gap-2">
-              <Input
-                id="playerName"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Enter player name"
-              />
-              <Button onClick={handleAddPlayer}>Add</Button>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Current Players</Label>
-            <div className="space-y-2">
-              {players.map((player) => (
+            {players.map((player, index) => (
+              <div
+                key={player.id}
+                className="flex items-center gap-2 p-2 bg-gray-100 rounded"
+              >
                 <div
-                  key={player.id}
-                  className="flex items-center gap-2 p-2 bg-gray-100 rounded"
-                >
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: player.color }}
-                  />
-                  <span>{player.name}</span>
-                </div>
-              ))}
-            </div>
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: player.color }}
+                />
+                <span>{player.name}</span>
+                {index === 0 && <span className="text-sm text-blue-600">(Host)</span>}
+              </div>
+            ))}
           </div>
+        </div>
+
+        {isHost ? (
           <Button
-            onClick={handleStartGame}
+            onClick={startGame}
             disabled={players.length < 2}
             className="w-full"
           >
-            Start Game
+            {players.length < 2
+              ? 'Waiting for more players...'
+              : 'Start Game'}
           </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        ) : (
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            Waiting for host to start the game...
+          </div>
+        )}
+
+        <p className="text-sm text-gray-500 text-center">
+          {players.length < 2
+            ? 'At least 2 players are required to start the game'
+            : isHost
+            ? 'All players are ready!'
+            : 'Game will start when the host is ready'}
+        </p>
+      </div>
+    </Card>
   );
 }

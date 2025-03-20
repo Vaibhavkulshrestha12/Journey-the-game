@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useSocket } from '@/context/SocketContext';
 import Confetti from 'react-confetti';
 import { motion } from 'framer-motion';
 import {
@@ -8,17 +8,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { GameContext } from '@/context/GameContext';
 import useSound from 'use-sound';
 
 export function WinScreen() {
-  const { gameState, resetGame } = useContext(GameContext);
+  const { hasWon, winner } = useSocket();
   const [playWinSound] = useSound('/sounds/win.mp3', { volume: 0.5 });
 
-  if (!gameState.hasWon || !gameState.winner) return null;
+  if (!hasWon || !winner) return null;
 
   return (
-    <Dialog open={gameState.hasWon} onOpenChange={() => resetGame()}>
+    <Dialog open={hasWon}>
       <DialogContent className="bg-gradient-to-b from-blue-500 to-blue-700 border-4 border-yellow-400">
         <Confetti />
         <DialogHeader>
@@ -32,14 +31,14 @@ export function WinScreen() {
           className="space-y-6 text-center text-white"
         >
           <p className="text-xl">
-            {gameState.winner.name} has won the game!
+            {winner.name} has won the game!
           </p>
           <Button
             size="lg"
             className="bg-yellow-400 text-blue-700 hover:bg-yellow-300"
             onClick={() => {
               playWinSound();
-              resetGame();
+              window.location.reload();
             }}
           >
             Play Again

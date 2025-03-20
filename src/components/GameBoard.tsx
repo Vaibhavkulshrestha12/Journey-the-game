@@ -1,6 +1,4 @@
-import { useContext } from 'react';
-import { GameContext } from '@/context/GameContext';
-//import { Button } from '@/components/ui/button';
+import { useSocket } from '@/context/SocketContext';
 import { Dice } from '@/components/Dice';
 import { Island } from '@/components/Island';
 import { Card } from '@/components/ui/card';
@@ -8,7 +6,7 @@ import { Card } from '@/components/ui/card';
 const BOARD_SIZE = 32;
 
 export function GameBoard() {
-  const { currentPlayer, players, rollDice, isRolling } = useContext(GameContext);
+  const { currentPlayer, players, rollDice, currentTurn } = useSocket();
 
   const islands = Array.from({ length: BOARD_SIZE }, (_, i) => ({
     id: i + 1,
@@ -20,6 +18,9 @@ export function GameBoard() {
     return colors[position % colors.length];
   }
 
+  const currentPlayerName = players.find(p => p.id === currentTurn)?.name;
+  const isCurrentPlayerTurn = currentPlayer?.id === currentTurn;
+
   return (
     <Card className="p-6 bg-white/90 backdrop-blur-sm">
       <div className="flex justify-between items-center mb-6">
@@ -28,7 +29,7 @@ export function GameBoard() {
             <div
               key={player.id}
               className={`flex items-center gap-2 p-2 rounded-lg ${
-                currentPlayer?.id === player.id
+                player.id === currentTurn
                   ? 'bg-blue-100 ring-2 ring-blue-400'
                   : ''
               }`}
@@ -44,7 +45,12 @@ export function GameBoard() {
             </div>
           ))}
         </div>
-        <Dice onRoll={rollDice} isRolling={isRolling} />
+        <div className="flex flex-col items-end">
+          <p className="text-sm text-gray-600 mb-2">
+            Current Turn: {currentPlayerName}
+          </p>
+          <Dice onRoll={rollDice} isRolling={false} disabled={!isCurrentPlayerTurn} />
+        </div>
       </div>
 
       <div className="grid grid-cols-8 gap-4 p-4 bg-blue-100 rounded-xl">
