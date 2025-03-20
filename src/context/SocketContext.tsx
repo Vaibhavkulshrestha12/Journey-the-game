@@ -45,11 +45,8 @@ export const useSocket = () => useContext(SocketContext);
 
 // Get the server URL based on environment
 const getServerUrl = () => {
-  if (import.meta.env.PROD) {
-    // Replace this with your actual production server URL
-    return 'https://journey-the-game.vercel.app/';
-  }
-  return 'http://localhost:3001';
+  const url = window.location.origin;
+  return url;
 };
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
@@ -67,7 +64,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [playWinSound] = useSound('/sounds/win.mp3', { volume: 0.5 });
 
   useEffect(() => {
-    const newSocket = io(getServerUrl());
+    const newSocket = io(getServerUrl(), {
+      path: '/api/socket.io/',
+      addTrailingSlash: false
+    });
     setSocket(newSocket);
 
     return () => {

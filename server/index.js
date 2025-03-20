@@ -12,8 +12,11 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  path: "/api/socket.io/", // Update Socket.IO path for Vercel
+  addTrailingSlash: false
 });
 
 const rooms = new Map();
@@ -233,7 +236,26 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Add a health check endpoint
+app.get('/api/healthcheck', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
 });
+
+// Handle Socket.IO as serverless function
+export default function handler(req, res) {
+  if (req.method === 'GET' && req.url === '/api/healthcheck') {
+    res.status(200).json({ status: 'healthy' });
+    return;
+  }
+  
+  // Don't call server.listen() - Vercel will handle this
+  return server;
+}
+
+// Only listen when running locally
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
