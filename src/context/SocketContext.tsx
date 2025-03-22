@@ -7,7 +7,7 @@ import { io } from 'socket.io-client';
 
 // Use environment variable or fallback to localhost for development
 const SOCKET_URL = import.meta.env.PROD 
-  ? 'https://your-server-url.herokuapp.com' // Replace with your actual deployed server URL
+  ? 'journey-the-game-production.up.railway.app' // Replace with your actual deployed server URL
   : 'http://localhost:3001';
 
 const socket = io(SOCKET_URL, {
