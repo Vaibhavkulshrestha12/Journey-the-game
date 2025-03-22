@@ -1,4 +1,5 @@
-import { useSocket } from '@/context/SocketContext';
+import { useContext } from 'react';
+import { SocketContext } from '@/context/SocketContext';
 import { motion } from 'framer-motion';
 import {
   Dialog,
@@ -9,6 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAudio } from '@/hooks/use-audio';
 
+type CardType = 'green' | 'orange' | 'pink' | 'yellow';
+
 const colorStyles = {
   green: 'bg-green-100 border-green-500',
   orange: 'bg-orange-100 border-orange-500',
@@ -17,14 +20,17 @@ const colorStyles = {
 };
 
 export function CardModal() {
-  const { currentCard, showCard, handleCardComplete } = useSocket();
+  const { currentCard, showCard, handleCardComplete } = useContext(SocketContext);
   const playCardSound = useAudio('/sounds/card-flip.mp3', 0.5);
 
   if (!currentCard || !showCard) return null;
 
+  // Type assertion to make TypeScript happy
+  const cardType = currentCard.type as CardType;
+
   return (
     <Dialog open={showCard} onOpenChange={() => handleCardComplete()}>
-      <DialogContent className={`${colorStyles[currentCard.type]} border-4`}>
+      <DialogContent className={`${colorStyles[cardType]} border-4`}>
         <DialogHeader>
           <DialogTitle className="text-2xl capitalize">{currentCard.type} Card</DialogTitle>
         </DialogHeader>
@@ -41,7 +47,7 @@ export function CardModal() {
           )}
           {currentCard.options && (
             <div className="grid grid-cols-2 gap-2">
-              {currentCard.options.map((option) => (
+              {currentCard.options.map((option: string) => (
                 <Button
                   key={option}
                   variant="outline"

@@ -10,7 +10,7 @@ import { CardModal } from '@/components/CardModal';
 import { WinScreen } from '@/components/WinScreen';
 import { RoomSetup } from '@/components/RoomSetup';
 import { Ship } from 'lucide-react';
-import { useSocket } from '@/context/SocketContext';
+import { useSocket } from '@/hooks/useSocket';
 
 function GameWrapper() {
   const [showRoomSetup, setShowRoomSetup] = useState(false);

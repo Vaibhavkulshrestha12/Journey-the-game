@@ -33,4 +33,8 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   );
 }
 
-export { Badge, badgeVariants };
+// Create a named export for the Badge component
+export { Badge };
+
+// Export the badgeVariants separately as a default export
+//export default badgeVariants;

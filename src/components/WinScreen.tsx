@@ -1,4 +1,4 @@
-import { useSocket } from '@/context/SocketContext';
+import { useSocket } from '@/hooks/useSocket';
 import Confetti from 'react-confetti';
 import { motion } from 'framer-motion';
 import {

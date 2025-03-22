@@ -1,14 +1,21 @@
-import { useSocket } from '@/context/SocketContext';
+// File: src/components/GameBoard.tsx
+import { useSocket } from '@/hooks/useSocket';
 import { Dice } from '@/components/Dice';
 import { Island } from '@/components/Island';
 import { Card } from '@/components/ui/card';
+import { Player } from '@/types';
 
 const BOARD_SIZE = 32;
+
+interface IslandData {
+  id: number;
+  color: string;
+}
 
 export function GameBoard() {
   const { currentPlayer, players, rollDice, currentTurn } = useSocket();
 
-  const islands = Array.from({ length: BOARD_SIZE }, (_, i) => ({
+  const islands: IslandData[] = Array.from({ length: BOARD_SIZE }, (_, i) => ({
     id: i + 1,
     color: getIslandColor(i + 1),
   }));
@@ -18,14 +25,14 @@ export function GameBoard() {
     return colors[position % colors.length];
   }
 
-  const currentPlayerName = players.find(p => p.id === currentTurn)?.name;
+  const currentPlayerName = players.find((p: Player) => p.id === currentTurn)?.name;
   const isCurrentPlayerTurn = currentPlayer?.id === currentTurn;
 
   return (
     <Card className="p-6 bg-white/90 backdrop-blur-sm">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
-          {players.map((player) => (
+          {players.map((player: Player) => (
             <div
               key={player.id}
               className={`flex items-center gap-2 p-2 rounded-lg ${
@@ -59,7 +66,7 @@ export function GameBoard() {
             key={island.id}
             position={island.id}
             color={island.color}
-            players={players.filter((p) => p.position === island.id)}
+            players={players.filter((p: Player) => p.position === island.id)}
           />
         ))}
       </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSocket } from '@/context/SocketContext';
+import { useSocket } from '@/hooks/useSocket';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';

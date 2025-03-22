@@ -1,4 +1,4 @@
-import { useSocket } from '@/context/SocketContext';
+import { useSocket } from '@/hooks/useSocket';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 

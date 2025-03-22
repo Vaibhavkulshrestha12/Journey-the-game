@@ -1,3 +1,4 @@
+// File: src/context/SocketContext.tsx
 import { createContext, useEffect, useState, useCallback } from 'react';
 import { Player, Card } from '@/types';
 import { useAudio } from '@/hooks/use-audio';
