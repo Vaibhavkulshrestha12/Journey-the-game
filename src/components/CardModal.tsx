@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import useSound from 'use-sound';
+import { useAudio } from '@/hooks/use-audio';
 
 const colorStyles = {
   green: 'bg-green-100 border-green-500',
@@ -18,7 +18,7 @@ const colorStyles = {
 
 export function CardModal() {
   const { currentCard, showCard, handleCardComplete } = useSocket();
-  const [playCardSound] = useSound('/sounds/card-flip.mp3', { volume: 0.5 });
+  const playCardSound = useAudio('/sounds/card-flip.mp3', 0.5);
 
   if (!currentCard || !showCard) return null;
 

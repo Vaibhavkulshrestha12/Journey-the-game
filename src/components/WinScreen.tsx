@@ -8,11 +8,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import useSound from 'use-sound';
+import { useAudio } from '@/hooks/use-audio';
 
 export function WinScreen() {
   const { hasWon, winner } = useSocket();
-  const [playWinSound] = useSound('/sounds/win.mp3', { volume: 0.5 });
+  const playWinSound = useAudio('/sounds/win.mp3', 0.5);
 
   if (!hasWon || !winner) return null;
 

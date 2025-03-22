@@ -1,7 +1,7 @@
 import { createContext, useState, ReactNode } from 'react';
 import { Player, Card, GameState } from '@/types';
 import { cards } from '@/data/cards';
-import useSound from 'use-sound';
+import { useAudio } from '@/hooks/use-audio';
 
 interface GameContextType {
   players: Player[];
@@ -59,8 +59,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameStarted, setGameStarted] = useState(false);
   const [isRolling, setIsRolling] = useState(false);
   const [gameState, setGameState] = useState<GameState>(initialGameState);
-  const [playMoveSound] = useSound('/sounds/move.mp3', { volume: 0.5 });
-  const [playWinSound] = useSound('/sounds/win.mp3', { volume: 0.5 });
+  const playMoveSound = useAudio('/sounds/move.mp3', 0.5);
+  const playWinSound = useAudio('/sounds/win.mp3', 0.5);
 
   const addPlayer = (name: string) => {
     if (players.length < 6) {

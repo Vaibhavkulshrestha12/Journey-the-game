@@ -1,10 +1,20 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { Player, GameState, Card } from '@/types';
-import useSound from 'use-sound';
+import { createContext, useEffect, useState, useCallback } from 'react';
+import { Player, Card } from '@/types';
+import { useAudio } from '@/hooks/use-audio';
+//import { supabase } from '@/lib/supabase';
+import { io } from 'socket.io-client';
 
-interface SocketContextType {
-  socket: Socket | null;
+// Use environment variable or fallback to localhost for development
+const SOCKET_URL = import.meta.env.PROD 
+  ? 'https://your-server-url.herokuapp.com' // Replace with your actual deployed server URL
+  : 'http://localhost:3001';
+
+const socket = io(SOCKET_URL, {
+  transports: ['websocket'],
+  autoConnect: true
+});
+
+export interface SocketContextType {
   roomCode: string | null;
   createRoom: () => Promise<string>;
   joinRoom: (roomCode: string, playerName: string) => Promise<{ success: boolean; error?: string }>;
@@ -22,8 +32,16 @@ interface SocketContextType {
   handleCardComplete: () => void;
 }
 
-const SocketContext = createContext<SocketContextType>({
-  socket: null,
+interface JoinRoomResponse {
+  error?: string;
+  player?: Player;
+  gameState?: {
+    players: Player[];
+  };
+  isHost?: boolean;
+}
+
+export const SocketContext = createContext<SocketContextType>({
   roomCode: null,
   createRoom: async () => '',
   joinRoom: async () => ({ success: false }),
@@ -41,16 +59,7 @@ const SocketContext = createContext<SocketContextType>({
   handleCardComplete: () => {},
 });
 
-export const useSocket = () => useContext(SocketContext);
-
-// Get the server URL based on environment
-const getServerUrl = () => {
-  const url = window.location.origin;
-  return url;
-};
-
 export function SocketProvider({ children }: { children: React.ReactNode }) {
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [roomCode, setRoomCode] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
@@ -61,29 +70,27 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [showCard, setShowCard] = useState(false);
   const [hasWon, setHasWon] = useState(false);
   const [winner, setWinner] = useState<Player | null>(null);
-  const [playWinSound] = useSound('/sounds/win.mp3', { volume: 0.5 });
+  const playWinSound = useAudio('/sounds/win.mp3', 0.5);
+
+  const handleGameWon = useCallback(({ winner: gameWinner }: { winner: Player }) => {
+    setHasWon(true);
+    setWinner(gameWinner);
+    playWinSound();
+  }, [playWinSound]);
 
   useEffect(() => {
-    const newSocket = io(getServerUrl(), {
-      path: '/api/socket.io/',
-      addTrailingSlash: false
-    });
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.close();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on('playerJoined', ({ players, hostId }) => {
-      setPlayers(players);
-      setIsHost(socket.id === hostId);
+    socket.on('connect', () => {
+      console.log('Connected to server');
     });
 
-    socket.on('gameStarted', (gameState: GameState) => {
+    socket.on('playerJoined', ({ players: updatedPlayers, hostId }) => {
+      setPlayers(updatedPlayers);
+      if (socket.id === hostId) {
+        setIsHost(true);
+      }
+    });
+
+    socket.on('gameStarted', (gameState) => {
       setGameStarted(true);
       setPlayers(gameState.players);
       setCurrentTurn(gameState.players[0].id);
@@ -100,39 +107,26 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    socket.on('gameWon', ({ winner }) => {
-      setHasWon(true);
-      setWinner(winner);
-      playWinSound();
-    });
+    socket.on('gameWon', handleGameWon);
 
-    socket.on('playerLeft', ({ players, leftPlayerId, newHostId }) => {
-      setPlayers(players);
+    socket.on('playerLeft', ({ players: updatedPlayers, newHostId }) => {
+      setPlayers(updatedPlayers);
       if (socket.id === newHostId) {
         setIsHost(true);
       }
-      if (currentTurn === leftPlayerId) {
-        setCurrentTurn(players[0]?.id || null);
-      }
-    });
-
-    socket.on('cardCompleted', () => {
-      setShowCard(false);
-      setCurrentCard(null);
     });
 
     return () => {
+      socket.off('connect');
       socket.off('playerJoined');
       socket.off('gameStarted');
       socket.off('diceRolled');
       socket.off('gameWon');
       socket.off('playerLeft');
-      socket.off('cardCompleted');
     };
-  }, [socket, currentTurn, playWinSound]);
+  }, [handleGameWon]);
 
   const createRoom = async () => {
-    if (!socket) return '';
     return new Promise<string>((resolve) => {
       socket.emit('createRoom', (roomCode: string) => {
         setRoomCode(roomCode);
@@ -142,33 +136,39 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const joinRoom = async (roomCode: string, playerName: string) => {
-    if (!socket) return { success: false };
+  const joinRoom = async (code: string, playerName: string) => {
     return new Promise<{ success: boolean; error?: string }>((resolve) => {
-      socket.emit('joinRoom', { roomCode, playerName }, (response: any) => {
-        if (response.success) {
-          setRoomCode(roomCode);
+      socket.emit('joinRoom', { roomCode: code, playerName }, (response: JoinRoomResponse) => {
+        if (response.error) {
+          resolve({ success: false, error: response.error });
+          return;
+        }
+
+        if (response.player && response.gameState) {
+          setRoomCode(code);
           setCurrentPlayer(response.player);
           setPlayers(response.gameState.players);
-          setIsHost(response.isHost);
+          setIsHost(response.isHost || false);
+          resolve({ success: true });
+        } else {
+          resolve({ success: false, error: 'Invalid server response' });
         }
-        resolve(response);
       });
     });
   };
 
   const startGame = () => {
-    if (!socket || !roomCode || !isHost) return;
+    if (!roomCode || !isHost) return;
     socket.emit('startGame', { roomCode });
   };
 
   const rollDice = () => {
-    if (!socket || !roomCode || !currentPlayer || currentPlayer.id !== currentTurn) return;
+    if (!currentPlayer || !roomCode || currentPlayer.id !== currentTurn) return;
     socket.emit('rollDice', { roomCode, playerId: currentPlayer.id });
   };
 
   const handleCardComplete = () => {
-    if (!socket || !roomCode) return;
+    if (!roomCode) return;
     socket.emit('completeCard', { roomCode });
     setShowCard(false);
     setCurrentCard(null);
@@ -177,7 +177,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   return (
     <SocketContext.Provider
       value={{
-        socket,
         roomCode,
         createRoom,
         joinRoom,
