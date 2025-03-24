@@ -1,4 +1,4 @@
-// File: src/hooks/useSocket.ts
+
 import { useContext } from 'react';
 import { SocketContext, SocketContextType } from '@/context/SocketContext';
 

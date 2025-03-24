@@ -2,7 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,6 +15,9 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+
+// Serve static files from the React app build directory
+app.use(express.static(join(__dirname, '../dist')));
 
 const rooms = new Map();
 
@@ -231,6 +234,11 @@ io.on('connection', (socket) => {
       }
     });
   });
+});
+
+// Serve React's index.html for all other routes (client-side routing)
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, '../dist/index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
