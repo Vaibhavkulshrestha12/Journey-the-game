@@ -23,7 +23,7 @@ export async function createRoom(hostId: string): Promise<string> {
 }
 
 export async function joinRoom(code: string, userId: string, playerName: string, color: string) {
-  // Get room
+
   const { data: room, error: roomError } = await supabase
     .from('rooms')
     .select('id, game_started')
@@ -34,7 +34,7 @@ export async function joinRoom(code: string, userId: string, playerName: string,
   if (!room) throw new Error('Room not found');
   if (room.game_started) throw new Error('Game already started');
 
-  // Join room
+ 
   const { error: playerError } = await supabase
     .from('players')
     .insert([
@@ -59,7 +59,7 @@ export async function startGame(roomId: string) {
 
   if (error) throw error;
 
-  // Set first player's turn
+  
   const { data: players } = await supabase
     .from('players')
     .select('id')
@@ -93,7 +93,7 @@ export async function setWinner(roomId: string, playerId: string) {
 }
 
 export async function nextTurn(roomId: string, currentPlayerId: string) {
-  // Get all players in room
+  
   const { data: players } = await supabase
     .from('players')
     .select('id')
@@ -102,11 +102,11 @@ export async function nextTurn(roomId: string, currentPlayerId: string) {
 
   if (!players) return;
 
-  // Find current player index
+
   const currentIndex = players.findIndex(p => p.id === currentPlayerId);
   const nextIndex = (currentIndex + 1) % players.length;
 
-  // Update turns
+ 
   await supabase
     .from('players')
     .update({ current_turn: false })

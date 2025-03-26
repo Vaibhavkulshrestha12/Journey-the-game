@@ -16,7 +16,7 @@ const io = new Server(server, {
   }
 });
 
-// Serve static files from the dist directory
+// serving from dist
 app.use(express.static(join(__dirname, '../dist')));
 
 const rooms = new Map();
@@ -236,7 +236,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// This MUST be the last route
+
 app.get('*', (req, res) => {
   res.sendFile(join(__dirname, '../dist/index.html'));
 });

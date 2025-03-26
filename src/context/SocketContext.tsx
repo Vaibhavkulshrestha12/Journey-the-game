@@ -1,13 +1,13 @@
-// File: src/context/SocketContext.tsx
+
 import { createContext, useEffect, useState, useCallback } from 'react';
 import { Player, Card } from '@/types';
 import { useAudio } from '@/hooks/use-audio';
-//import { supabase } from '@/lib/supabase';
+
 import { io } from 'socket.io-client';
 
-// Use environment variable or fallback to localhost for development
+
 const SOCKET_URL = import.meta.env.PROD 
-  ? 'journey-the-game-production.up.railway.app' // Replace with your actual deployed server URL
+  ? 'journey-the-game-production.up.railway.app' 
   : 'http://localhost:3001';
 
 const socket = io(SOCKET_URL, {

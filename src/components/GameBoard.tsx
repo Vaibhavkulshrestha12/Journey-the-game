@@ -1,4 +1,4 @@
-// File: src/components/GameBoard.tsx
+
 import { useSocket } from '@/hooks/useSocket';
 import { Dice } from '@/components/Dice';
 import { Island } from '@/components/Island';

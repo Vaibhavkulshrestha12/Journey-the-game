@@ -1,30 +1,4 @@
-/*
-  # Game Schema Setup
 
-  1. New Tables
-    - `rooms`
-      - `id` (uuid, primary key)
-      - `code` (text, unique)
-      - `host_id` (uuid)
-      - `created_at` (timestamp)
-      - `game_started` (boolean)
-      - `winner_id` (uuid, nullable)
-    
-    - `players`
-      - `id` (uuid, primary key)
-      - `room_id` (uuid, foreign key)
-      - `name` (text)
-      - `position` (integer)
-      - `color` (text)
-      - `created_at` (timestamp)
-      - `current_turn` (boolean)
-
-  2. Security
-    - Enable RLS on all tables
-    - Add policies for authenticated users
-*/
-
--- Create rooms table
 CREATE TABLE IF NOT EXISTS rooms (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   code text UNIQUE NOT NULL,
@@ -35,7 +9,7 @@ CREATE TABLE IF NOT EXISTS rooms (
   CONSTRAINT fk_host FOREIGN KEY (host_id) REFERENCES auth.users(id)
 );
 
--- Create players table
+
 CREATE TABLE IF NOT EXISTS players (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id uuid REFERENCES rooms(id) ON DELETE CASCADE,
@@ -47,11 +21,11 @@ CREATE TABLE IF NOT EXISTS players (
   current_turn boolean DEFAULT false
 );
 
--- Enable RLS
+
 ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE players ENABLE ROW LEVEL SECURITY;
 
--- Policies for rooms
+
 CREATE POLICY "Anyone can create a room"
   ON rooms
   FOR INSERT
@@ -77,7 +51,7 @@ CREATE POLICY "Host can update room"
   USING (host_id = auth.uid())
   WITH CHECK (host_id = auth.uid());
 
--- Policies for players
+
 CREATE POLICY "Players can view other players in their room"
   ON players
   FOR SELECT
